@@ -317,31 +317,40 @@
     // times 객체에서 직접 가져오기
     var otherTime = null;
     if (times && typeof times === "object") {
-      otherTime = times[otherCode] != null ? times[otherCode] : null;
+      if (times[otherCode] != null) {
+        otherTime = Number(times[otherCode]);
+      }
     }
     
-    console.log("📊 showResult 호출:", { myTime: myTime, times: times, otherCode: otherCode, otherTime: otherTime });
+    console.log("📊 showResult 호출:", { 
+      myTime: myTime, 
+      times: times, 
+      otherCode: otherCode, 
+      otherTime: otherTime,
+      otherTimeType: typeof otherTime
+    });
     
+    // 반응 시간 표시 업데이트
     if (gameResultTimes) {
       var myTimeText = "내 반응 시간: " + (myTime != null ? myTime.toFixed(3) + "초" : "—");
-      var otherTimeText = otherTime != null ? "상대: " + otherTime.toFixed(3) + "초" : "상대: —";
+      var otherTimeText = otherTime != null && !isNaN(otherTime) ? "상대: " + otherTime.toFixed(3) + "초" : "상대: —";
       gameResultTimes.textContent = myTimeText + " / " + otherTimeText;
     }
     
-    if (otherTime == null) {
-      gameResultMsg.textContent = "상대방 결과를 기다리는 중…";
-      gameResultMsg.className = "game-result-msg";
-      // 상대방 결과가 없으면 주기적으로 확인
-      startCheckingResult(myTime);
-    } else {
-      // 상대방 결과가 있으면 최종 결과 표시
+    // 상대방 결과가 있으면 즉시 표시, 없으면 대기
+    if (otherTime != null && !isNaN(otherTime) && otherTime >= 0) {
       console.log("✅ 상대방 결과 있음, 최종 결과 표시");
       displayFinalResult(myTime, otherTime);
-      // 확인 중단
+      // 확인 중단 (이미 결과가 있으므로)
       if (checkResultInterval) {
         clearInterval(checkResultInterval);
         checkResultInterval = null;
       }
+    } else {
+      gameResultMsg.textContent = "상대방 결과를 기다리는 중…";
+      gameResultMsg.className = "game-result-msg";
+      // 상대방 결과가 없으면 주기적으로 확인 시작
+      startCheckingResult(myTime);
     }
   }
 
@@ -381,8 +390,22 @@
     if (checkResultInterval) clearInterval(checkResultInterval);
     console.log("🔄 상대방 결과 확인 시작 (내 시간:", myTime, "초, 코드:", currentUserCode + ")");
     var checkCount = 0;
+    var maxChecks = 30; // 최대 30번 확인 (약 1분)
+    
     checkResultInterval = setInterval(function () {
       checkCount++;
+      
+      // 최대 확인 횟수 초과 시 중단
+      if (checkCount > maxChecks) {
+        console.log("⏰ 최대 확인 횟수 초과, 확인 중단");
+        clearInterval(checkResultInterval);
+        checkResultInterval = null;
+        if (gameResultMsg && gameResultMsg.textContent === "상대방 결과를 기다리는 중…") {
+          gameResultMsg.textContent = "상대방 결과를 받지 못했습니다. 잠시 후 다시 시도해 주세요.";
+        }
+        return;
+      }
+      
       fetch("/api/game-scores")
         .then(function (r) {
           if (!r.ok) {
@@ -393,7 +416,6 @@
         })
         .then(function (data) {
           if (!data) return;
-          console.log("📊 결과 확인 응답 (#" + checkCount + "):", data);
           
           var otherCode = currentUserCode === "1111" ? "0000" : "1111";
           var otherTime = null;
@@ -405,23 +427,32 @@
             otherTime = data.reaction_1111 != null ? Number(data.reaction_1111) : null;
           }
           
-          console.log("상대방 시간:", otherTime, "초 (코드:", otherCode + ", 타입:", typeof otherTime + ")");
+          console.log("📊 확인 #" + checkCount + " - 상대방 시간:", otherTime, "초 (코드:", otherCode + ")");
           
-          if (otherTime != null && !isNaN(otherTime)) {
+          if (otherTime != null && !isNaN(otherTime) && otherTime >= 0) {
             console.log("✅ 상대방 결과 확인됨:", otherTime, "초");
+            
+            // 결과 영역이 숨겨져 있으면 표시
+            if (gameResultArea) gameResultArea.style.display = "block";
+            
             // 결과 업데이트
             if (gameResultTimes) {
               var myTimeText = "내 반응 시간: " + (myTime != null ? myTime.toFixed(3) + "초" : "—");
               var otherTimeText = "상대: " + otherTime.toFixed(3) + "초";
               gameResultTimes.textContent = myTimeText + " / " + otherTimeText;
             }
+            
+            // 최종 결과 표시
             displayFinalResult(myTime, otherTime);
+            
             // 확인 중단
             clearInterval(checkResultInterval);
             checkResultInterval = null;
             console.log("✅ 최종 결과 표시 완료");
           } else {
-            console.log("⏳ 상대방 결과 대기 중... (확인 횟수: " + checkCount + ")");
+            if (checkCount % 5 === 0) { // 5번마다 한 번씩만 로그
+              console.log("⏳ 상대방 결과 대기 중... (확인 횟수: " + checkCount + "/" + maxChecks + ")");
+            }
           }
         })
         .catch(function (err) {
@@ -463,26 +494,29 @@
             if (gameResultArea) gameResultArea.style.display = "block";
             return;
           }
-          var times = result.data.times || result.data || {};
+          // API 응답에서 직접 반응 시간 가져오기
+          var reaction1111 = result.data.reaction_1111 != null ? Number(result.data.reaction_1111) : null;
+          var reaction0000 = result.data.reaction_0000 != null ? Number(result.data.reaction_0000) : null;
+          
+          var times = {
+            "1111": reaction1111,
+            "0000": reaction0000
+          };
+          
           console.log("결과 수신:", { 
             myTime: gameReactionTime, 
             times: times,
-            reaction_1111: result.data.reaction_1111,
-            reaction_0000: result.data.reaction_0000,
-            fullData: result.data
+            reaction_1111: reaction1111,
+            reaction_0000: reaction0000,
+            currentUserCode: currentUserCode
           });
-          
-          // times 객체가 없거나 비어있으면 직접 구성
-          if (!times || Object.keys(times).length === 0) {
-            times = {
-              "1111": result.data.reaction_1111 != null ? Number(result.data.reaction_1111) : null,
-              "0000": result.data.reaction_0000 != null ? Number(result.data.reaction_0000) : null
-            };
-            console.log("times 객체 재구성:", times);
-          }
           
           showResult(gameReactionTime, times);
           gameState = "finished";
+          
+          // 결과를 제출한 후에도 계속 확인 (상대방이 나중에 제출할 수 있음)
+          if (checkResultInterval) clearInterval(checkResultInterval);
+          startCheckingResult(gameReactionTime);
         })
         .catch(function () {
           if (gameResultMsg) {
