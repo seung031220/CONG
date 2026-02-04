@@ -204,17 +204,36 @@ body {
   margin-bottom: 1.5rem;
 }
 
-.game-score-display {
-  font-size: 28px;
-  font-weight: 600;
-  color: var(--text);
-  margin: 0 0 0.5rem 0;
-}
-
-.game-timer-display {
+.game-waiting-msg {
   font-size: 15px;
   color: var(--text-muted);
+  margin: 0;
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.game-countdown-display {
+  font-size: 32px;
+  font-weight: 600;
+  color: var(--accent);
   margin: 0 0 1rem 0;
+  text-align: center;
+  min-height: 40px;
+}
+
+.game-instruction-text {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin: 0 0 1.5rem 0;
+  text-align: center;
+}
+
+.game-reaction-time {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--accent);
+  margin: 1rem 0 0 0;
+  text-align: center;
 }
 
 .game-click-btn {
@@ -246,7 +265,7 @@ body {
   color: var(--text-muted);
 }
 
-.game-result-scores {
+.game-result-times {
   font-size: 14px;
   color: var(--text-muted);
   margin: 0;

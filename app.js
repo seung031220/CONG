@@ -19,20 +19,26 @@
   const gameCodeScreen = document.getElementById("game-code-screen");
   const gameRoomScreen = document.getElementById("game-room-screen");
   const gameRoomLabel = document.getElementById("game-room-label");
-  const gameScoreValue = document.getElementById("game-score-value");
-  const gameTimer = document.getElementById("game-timer");
-  const gameClickBtn = document.getElementById("game-click-btn");
+  const gameInstruction = document.getElementById("game-instruction");
+  const gameWaitingArea = document.getElementById("game-waiting-area");
+  const gameWaitingMsg = document.getElementById("game-waiting-msg");
   const gamePlayArea = document.getElementById("game-play-area");
+  const gameCountdown = document.getElementById("game-countdown");
+  const gameInstructionText = document.getElementById("game-instruction-text");
+  const gameClickBtn = document.getElementById("game-click-btn");
+  const gameReactionTimeEl = document.getElementById("game-reaction-time");
   const gameResultArea = document.getElementById("game-result-area");
   const gameResultMsg = document.getElementById("game-result-msg");
-  const gameResultScores = document.getElementById("game-result-scores");
+  const gameResultTimes = document.getElementById("game-result-times");
 
   const GAME_ENTRY_CODES = ["1111", "0000"];
-  const GAME_DURATION_SEC = 10;
   var currentUserCode = null;
-  var gameScore = 0;
-  var gameTimerId = null;
-  var gameEndTime = null;
+  var gameState = "waiting"; // waiting, countdown, ready, clicked, finished
+  var gameCountdownId = null;
+  var gameWaitStartTime = null;
+  var gameButtonShowTime = null;
+  var gameReactionTime = null;
+  var checkOpponentInterval = null;
 
   const partCards = document.querySelectorAll(".options-part .option-card");
   const modelCards = document.querySelectorAll(".options-model .option-card");
@@ -116,18 +122,19 @@
 
   // ——— 게임 입장 코드 ———
   function resetGameUI() {
-    gameScore = 0;
-    if (gameScoreValue) gameScoreValue.textContent = "0";
-    if (gameTimer) gameTimer.textContent = "시작 버튼을 누르세요";
+    gameState = "waiting";
+    gameReactionTime = null;
+    if (gameWaitingArea) gameWaitingArea.style.display = "block";
+    if (gamePlayArea) gamePlayArea.style.display = "none";
+    if (gameResultArea) gameResultArea.style.display = "none";
+    if (gameWaitingMsg) gameWaitingMsg.textContent = "다른 참가자 대기 중…";
     if (gameClickBtn) {
+      gameClickBtn.style.display = "none";
       gameClickBtn.disabled = false;
-      gameClickBtn.textContent = "시작";
     }
-    if (gameResultArea) {
-      gameResultArea.style.display = "none";
-      if (gameResultMsg) gameResultMsg.textContent = "";
-      if (gameResultScores) gameResultScores.textContent = "";
-    }
+    if (gameReactionTimeEl) gameReactionTimeEl.style.display = "none";
+    if (gameResultMsg) gameResultMsg.textContent = "";
+    if (gameResultTimes) gameResultTimes.textContent = "";
   }
 
   function enterGame() {
@@ -150,90 +157,142 @@
     resetGameUI();
     if (gameCodeScreen) gameCodeScreen.classList.remove("game-screen-active");
     if (gameRoomScreen) gameRoomScreen.classList.add("game-screen-active");
+    notifyEntered();
+    startCheckingOpponent();
   }
 
-  function showResult(myScore, scores) {
-    if (!gameResultArea || !gameResultMsg || !gameResultScores) return;
+  function notifyEntered() {
+    if (!currentUserCode) return;
+    fetch("/api/game-scores", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code: currentUserCode, entered: true }),
+    }).catch(function () {});
+  }
+
+  function startCheckingOpponent() {
+    if (checkOpponentInterval) clearInterval(checkOpponentInterval);
+    checkOpponentInterval = setInterval(function () {
+      checkBothEntered();
+    }, 2000);
+  }
+
+  function checkBothEntered() {
+    fetch("/api/game-scores")
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        var entered1111 = data.entered_1111 || false;
+        var entered0000 = data.entered_0000 || false;
+        if (entered1111 && entered0000 && gameState === "waiting") {
+          clearInterval(checkOpponentInterval);
+          startReactionGame();
+        }
+      })
+      .catch(function () {});
+  }
+
+  function startReactionGame() {
+    gameState = "countdown";
+    if (gameWaitingArea) gameWaitingArea.style.display = "none";
+    if (gamePlayArea) gamePlayArea.style.display = "block";
+    if (gameCountdown) gameCountdown.textContent = "준비...";
+    if (gameInstructionText) gameInstructionText.textContent = "버튼이 나타나면 빠르게 클릭하세요!";
+    var count = 3;
+    gameCountdownId = setInterval(function () {
+      if (gameCountdown) gameCountdown.textContent = count > 0 ? count + "..." : "시작!";
+      count--;
+      if (count < 0) {
+        clearInterval(gameCountdownId);
+        showButtonAfterRandomDelay();
+      }
+    }, 1000);
+  }
+
+  function showButtonAfterRandomDelay() {
+    var delay = Math.random() * 4000 + 1000;
+    gameWaitStartTime = Date.now();
+    setTimeout(function () {
+      if (gameState === "countdown") {
+        gameState = "ready";
+        gameButtonShowTime = Date.now();
+        if (gameClickBtn) {
+          gameClickBtn.style.display = "block";
+          gameClickBtn.textContent = "클릭!";
+        }
+        if (gameCountdown) gameCountdown.textContent = "";
+      }
+    }, delay);
+  }
+
+  function showResult(myTime, times) {
+    if (!gameResultArea || !gameResultMsg || !gameResultTimes) return;
     gameResultArea.style.display = "block";
     var otherCode = currentUserCode === "1111" ? "0000" : "1111";
-    var otherScore = scores[otherCode];
-    if (gameResultScores) {
-      var myScoreText = "내 점수: " + myScore + "점";
-      var otherScoreText = otherScore != null ? "상대: " + otherScore + "점" : "상대: —";
-      gameResultScores.textContent = myScoreText + " / " + otherScoreText;
+    var otherTime = times[otherCode];
+    if (gameResultTimes) {
+      var myTimeText = "내 반응 시간: " + (myTime != null ? myTime.toFixed(3) + "초" : "—");
+      var otherTimeText = otherTime != null ? "상대: " + otherTime.toFixed(3) + "초" : "상대: —";
+      gameResultTimes.textContent = myTimeText + " / " + otherTimeText;
     }
-    if (otherScore == null) {
-      gameResultMsg.textContent = "상대 방 결과를 기다리는 중…";
+    if (otherTime == null) {
+      gameResultMsg.textContent = "상대방 결과를 기다리는 중…";
       gameResultMsg.className = "game-result-msg";
-    } else if (myScore > otherScore) {
+    } else if (myTime != null && myTime < otherTime) {
       gameResultMsg.textContent = "승자입니다! 합쳐진 에어팟의 주인이 되었어요.";
       gameResultMsg.className = "game-result-msg winner";
-    } else if (myScore < otherScore) {
+    } else if (myTime != null && myTime > otherTime) {
       gameResultMsg.textContent = "아쉽게도 패배했습니다.";
       gameResultMsg.className = "game-result-msg loser";
-    } else {
+    } else if (myTime != null && myTime === otherTime) {
       gameResultMsg.textContent = "무승부입니다.";
       gameResultMsg.className = "game-result-msg";
     }
   }
 
-  function startGame() {
-    if (!currentUserCode || !gameClickBtn || !gameTimer) return;
-    gameScore = 0;
-    if (gameScoreValue) gameScoreValue.textContent = "0";
-    gameClickBtn.textContent = "클릭!";
-    gameEndTime = Date.now() + GAME_DURATION_SEC * 1000;
-    gameTimerId = setInterval(function () {
-      var left = Math.ceil((gameEndTime - Date.now()) / 1000);
-      if (gameTimer) gameTimer.textContent = left > 0 ? left + "초 남음" : "종료!";
-      if (left <= 0) {
-        clearInterval(gameTimerId);
-        gameTimerId = null;
+  if (gameClickBtn) {
+    gameClickBtn.addEventListener("click", function () {
+      if (gameState !== "ready" || gameClickBtn.disabled) return;
+      gameState = "clicked";
+      gameReactionTime = (Date.now() - gameButtonShowTime) / 1000;
+      if (gameClickBtn) {
         gameClickBtn.disabled = true;
-        gameClickBtn.textContent = "종료";
-        fetch("/api/game-scores", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ code: currentUserCode, score: gameScore }),
+        gameClickBtn.textContent = "완료!";
+      }
+      if (gameReactionTimeEl) {
+        gameReactionTimeEl.style.display = "block";
+        gameReactionTimeEl.textContent = "반응 시간: " + gameReactionTime.toFixed(3) + "초";
+      }
+      fetch("/api/game-scores", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: currentUserCode, reactionTime: gameReactionTime }),
+      })
+        .then(function (r) {
+          return r.json().then(function (data) {
+            return { status: r.status, data: data };
+          });
         })
-          .then(function (r) {
-            return r.json().then(function (data) {
-              return { status: r.status, data: data };
-            });
-          })
-          .then(function (result) {
-            if (result.status === 503) {
-              if (gameResultMsg) {
-                gameResultMsg.textContent =
-                  "점수 저장이 아직 설정되지 않았어요. 잠시 후 다시 시도해 주세요.";
-                gameResultMsg.className = "game-result-msg";
-              }
-              if (gameResultArea) gameResultArea.style.display = "block";
-              return;
-            }
-            var scores = result.data.scores || result.data || {};
-            showResult(gameScore, scores);
-          })
-          .catch(function () {
+        .then(function (result) {
+          if (result.status === 503) {
             if (gameResultMsg) {
-              gameResultMsg.textContent = "점수 전송에 실패했어요. 네트워크를 확인해 주세요.";
+              gameResultMsg.textContent =
+                "점수 저장이 아직 설정되지 않았어요. 잠시 후 다시 시도해 주세요.";
               gameResultMsg.className = "game-result-msg";
             }
             if (gameResultArea) gameResultArea.style.display = "block";
-          });
-      }
-    }, 200);
-  }
-
-  if (gameClickBtn) {
-    gameClickBtn.addEventListener("click", function () {
-      if (gameClickBtn.disabled) return;
-      if (gameClickBtn.textContent === "시작") {
-        startGame();
-        return;
-      }
-      gameScore++;
-      if (gameScoreValue) gameScoreValue.textContent = gameScore;
+            return;
+          }
+          var times = result.data.times || result.data || {};
+          showResult(gameReactionTime, times);
+          gameState = "finished";
+        })
+        .catch(function () {
+          if (gameResultMsg) {
+            gameResultMsg.textContent = "결과 전송에 실패했어요. 네트워크를 확인해 주세요.";
+            gameResultMsg.className = "game-result-msg";
+          }
+          if (gameResultArea) gameResultArea.style.display = "block";
+        });
     });
   }
 

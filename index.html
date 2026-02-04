@@ -118,15 +118,19 @@
 
         <div id="game-room-screen" class="game-screen">
           <p class="game-room-label" id="game-room-label">— 방</p>
-          <p class="game-entered-hint" id="game-instruction">10초 동안 버튼을 최대한 많이 눌러 보세요.</p>
-          <div id="game-play-area">
-            <p class="game-score-display"><span id="game-score-value">0</span>점</p>
-            <p class="game-timer-display" id="game-timer">시작 버튼을 누르세요</p>
-            <button type="button" class="btn-primary game-click-btn" id="game-click-btn" disabled>시작</button>
+          <p class="game-entered-hint" id="game-instruction">상대방이 입장하면 게임이 시작됩니다.</p>
+          <div id="game-waiting-area">
+            <p class="game-waiting-msg" id="game-waiting-msg">다른 참가자 대기 중…</p>
           </div>
-          <div id="game-result-area" class="game-result-area">
+          <div id="game-play-area" style="display: none;">
+            <p class="game-countdown-display" id="game-countdown">준비...</p>
+            <p class="game-instruction-text" id="game-instruction-text">버튼이 나타나면 빠르게 클릭하세요!</p>
+            <button type="button" class="btn-primary game-click-btn" id="game-click-btn" style="display: none;">클릭!</button>
+            <p class="game-reaction-time" id="game-reaction-time" style="display: none;"></p>
+          </div>
+          <div id="game-result-area" class="game-result-area" style="display: none;">
             <p class="game-result-msg" id="game-result-msg"></p>
-            <p class="game-result-scores" id="game-result-scores"></p>
+            <p class="game-result-times" id="game-result-times"></p>
           </div>
         </div>
       </div>
