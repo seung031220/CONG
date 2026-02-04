@@ -1,0 +1,10 @@
+{
+  "name": "airp",
+  "version": "1.0.0",
+  "description": "콩한쪽 – 잃어버린 에어팟, 함께 완성해요",
+  "private": true,
+  "dependencies": {
+    "resend": "^4.0.0",
+    "@upstash/redis": "^1.34.0"
+  }
+}

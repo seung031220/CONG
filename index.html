@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>콩한쪽 – 잃어버린 에어팟, 함께 완성해요</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div class="app layout-two-col">
+    <div class="app-left">
+      <header class="header">
+        <nav class="nav">
+          <a href="#" class="logo-link" data-view="home">
+            <h1 class="logo">콩한쪽</h1>
+          </a>
+        </nav>
+        <p class="tagline">잃어버린 에어팟, 함께 완성해요</p>
+      </header>
+
+      <!-- 1단계: 부품 선택 -->
+    <section id="step-part" class="step active">
+      <h2 class="step-title">가지고 계신 에어팟 부품을 선택해주세요</h2>
+      <p class="step-desc">한쪽만 남으셨나요? 본체만 있으신가요? 알려주세요.</p>
+      <div class="options options-part">
+        <button type="button" class="option-card" data-part="left" aria-label="왼쪽 유닛">
+          <span class="option-icon" aria-hidden="true">🎧</span>
+          <span class="option-label">왼쪽 유닛</span>
+          <span class="option-desc">왼쪽 이어폰만 있어요</span>
+        </button>
+        <button type="button" class="option-card" data-part="right" aria-label="오른쪽 유닛">
+          <span class="option-icon" aria-hidden="true">🎧</span>
+          <span class="option-label">오른쪽 유닛</span>
+          <span class="option-desc">오른쪽 이어폰만 있어요</span>
+        </button>
+        <button type="button" class="option-card" data-part="case" aria-label="본체(케이스)">
+          <span class="option-icon" aria-hidden="true">📦</span>
+          <span class="option-label">본체 (케이스)</span>
+          <span class="option-desc">충전 케이스만 있어요</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- 2단계: 모델 선택 -->
+    <section id="step-model" class="step">
+      <button type="button" class="back-btn" id="back-to-part" aria-label="이전 단계">
+        ← 부품 선택으로
+      </button>
+      <h2 class="step-title">에어팟 모델을 선택해주세요</h2>
+      <p class="step-desc">사용하시는 제품에 맞게 골라주세요.</p>
+      <div class="model-groups">
+        <div class="model-group">
+          <h3 class="model-group-title">에어팟</h3>
+          <div class="options options-model">
+            <button type="button" class="option-card model-card" data-model="airpods-1">1세대</button>
+            <button type="button" class="option-card model-card" data-model="airpods-2">2세대</button>
+            <button type="button" class="option-card model-card" data-model="airpods-3">3세대</button>
+            <button type="button" class="option-card model-card" data-model="airpods-4">4세대</button>
+          </div>
+        </div>
+        <div class="model-group">
+          <h3 class="model-group-title">에어팟 Pro</h3>
+          <div class="options options-model">
+            <button type="button" class="option-card model-card" data-model="pro-1">1세대</button>
+            <button type="button" class="option-card model-card" data-model="pro-2">2세대</button>
+            <button type="button" class="option-card model-card" data-model="pro-3">3세대</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3단계: 배송 정보 입력 (부품·모델 선택 후) -->
+    <section id="step-shipping" class="step" aria-label="배송 정보 입력">
+      <button type="button" class="back-btn" id="back-from-shipping" aria-label="모델 선택으로">← 모델 선택으로</button>
+      <h2 class="step-title">배송 정보를 입력해 주세요</h2>
+      <div class="shipping-notice">
+        <p class="shipping-address">
+          <strong>배송 주소</strong><br />
+          경기도 수원시 장안구 서부로 2066 (16419) 제 2공학관 26310
+        </p>
+        <p class="shipping-desc">위 주소로 부품을 보내주시면 됩니다. 아래에 본인 정보를 입력한 뒤 제출해 주세요.</p>
+      </div>
+      <form id="form-shipping" class="form-register">
+        <div class="form-group">
+          <label for="shipping-name" class="form-label">이름</label>
+          <input type="text" id="shipping-name" class="form-input" placeholder="홍길동" required />
+        </div>
+        <div class="form-group">
+          <label for="shipping-phone" class="form-label">전화번호</label>
+          <input type="tel" id="shipping-phone" class="form-input" placeholder="010-0000-0000" required />
+        </div>
+        <div class="form-group">
+          <label for="shipping-address" class="form-label">주소</label>
+          <input type="text" id="shipping-address" class="form-input" placeholder="받으실 주소를 입력해 주세요" required />
+        </div>
+        <p class="form-summary" id="shipping-summary">—</p>
+        <button type="submit" class="btn-primary" id="btn-shipping-submit">seung031220@naver.com으로 보내기</button>
+      </form>
+      <p id="shipping-message" class="form-message" role="alert" style="display: none;"></p>
+    </section>
+    </div>
+
+    <!-- 오른쪽: 게임창 (코드 입력 후 입장) -->
+    <aside class="app-right" aria-label="게임">
+      <div class="game-panel">
+        <h2 class="game-panel-title">에어팟 주인 결정 게임</h2>
+        <p class="game-panel-desc">합쳐진 에어팟의 주인을 게임으로 정해요. 코드를 입력해 입장하세요.</p>
+
+        <div id="game-code-screen" class="game-screen game-screen-active">
+          <label for="game-code-input" class="form-label">입장 코드</label>
+          <input type="text" id="game-code-input" class="form-input game-code-input" placeholder="코드 입력" maxlength="4" inputmode="numeric" autocomplete="off" />
+          <button type="button" class="btn-primary" id="game-code-submit">입장하기</button>
+          <p id="game-code-message" class="form-message" role="alert" style="display: none;"></p>
+        </div>
+
+        <div id="game-room-screen" class="game-screen">
+          <p class="game-room-label" id="game-room-label">— 방</p>
+          <p class="game-entered-hint" id="game-instruction">10초 동안 버튼을 최대한 많이 눌러 보세요.</p>
+          <div id="game-play-area">
+            <p class="game-score-display"><span id="game-score-value">0</span>점</p>
+            <p class="game-timer-display" id="game-timer">시작 버튼을 누르세요</p>
+            <button type="button" class="btn-primary game-click-btn" id="game-click-btn" disabled>시작</button>
+          </div>
+          <div id="game-result-area" class="game-result-area">
+            <p class="game-result-msg" id="game-result-msg"></p>
+            <p class="game-result-scores" id="game-result-scores"></p>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
