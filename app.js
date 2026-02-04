@@ -205,22 +205,46 @@
 
   function checkBothEntered() {
     fetch("/api/game-scores")
-      .then(function (r) { return r.json(); })
+      .then(function (r) {
+        if (!r.ok) {
+          console.error("입장 상태 확인 실패:", r.status, r.statusText);
+          return r.json().then(function (errData) {
+            throw new Error(errData.error || "상태 확인 실패");
+          });
+        }
+        return r.json();
+      })
       .then(function (data) {
-        var entered1111 = data.entered_1111 || false;
-        var entered0000 = data.entered_0000 || false;
-        console.log("입장 상태 확인:", { entered1111, entered0000, gameState, data });
+        var entered1111 = data.entered_1111 === true || data.entered_1111 === "1" || data.entered_1111 === 1 || data.entered_1111 === "true";
+        var entered0000 = data.entered_0000 === true || data.entered_0000 === "1" || data.entered_0000 === 1 || data.entered_0000 === "true";
+        
+        console.log("입장 상태 확인:", {
+          entered1111: entered1111,
+          entered0000: entered0000,
+          rawData: data,
+          gameState: gameState,
+          currentUserCode: currentUserCode
+        });
+        
         if (entered1111 && entered0000 && gameState === "waiting") {
-          console.log("두 명 모두 입장! 게임 시작");
+          console.log("✅ 두 명 모두 입장! 게임 시작");
           clearInterval(checkOpponentInterval);
           startReactionGame();
         } else {
           if (gameWaitingMsg) {
             var waitingText = "다른 참가자 대기 중…";
-            if (currentUserCode === "1111" && entered0000) {
-              waitingText = "0000 방 대기 중…";
-            } else if (currentUserCode === "0000" && entered1111) {
-              waitingText = "1111 방 대기 중…";
+            if (currentUserCode === "1111") {
+              if (entered0000) {
+                waitingText = "0000 방 입장 완료, 게임 시작 대기 중…";
+              } else {
+                waitingText = "0000 방 대기 중… (현재: " + (entered0000 ? "입장" : "미입장") + ")";
+              }
+            } else if (currentUserCode === "0000") {
+              if (entered1111) {
+                waitingText = "1111 방 입장 완료, 게임 시작 대기 중…";
+              } else {
+                waitingText = "1111 방 대기 중… (현재: " + (entered1111 ? "입장" : "미입장") + ")";
+              }
             }
             gameWaitingMsg.textContent = waitingText;
           }
@@ -228,6 +252,9 @@
       })
       .catch(function (err) {
         console.error("입장 상태 확인 실패:", err);
+        if (gameWaitingMsg) {
+          gameWaitingMsg.textContent = "상태 확인 오류: " + (err.message || "네트워크 오류");
+        }
       });
   }
 

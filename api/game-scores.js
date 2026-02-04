@@ -31,11 +31,20 @@ async function getGameState(redis) {
   ]);
   
   // Redis에서 가져온 값 확인 (디버깅용)
-  console.log("Redis 값:", { e1, e2, r1, r2 });
+  console.log("Redis 원본 값:", { 
+    e1: e1, 
+    e1_type: typeof e1,
+    e2: e2, 
+    e2_type: typeof e2,
+    r1: r1, 
+    r2: r2 
+  });
   
-  // 더 포괄적으로 확인
-  const entered1111 = e1 != null && e1 !== false && e1 !== "false" && e1 !== 0 && e1 !== "0";
-  const entered0000 = e2 != null && e2 !== false && e2 !== "false" && e2 !== 0 && e2 !== "0";
+  // 더 포괄적으로 확인 - null이 아니고 false/0/"false"/"0"이 아닌 모든 값
+  const entered1111 = e1 != null && e1 !== false && e1 !== "false" && e1 !== 0 && e1 !== "0" && e1 !== "";
+  const entered0000 = e2 != null && e2 !== false && e2 !== "false" && e2 !== 0 && e2 !== "0" && e2 !== "";
+  
+  console.log("변환된 입장 상태:", { entered1111, entered0000 });
   
   return {
     entered_1111: entered1111,
