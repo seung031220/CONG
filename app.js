@@ -162,18 +162,37 @@
   }
 
   function notifyEntered() {
-    if (!currentUserCode) return;
+    if (!currentUserCode) {
+      console.error("입장 실패: currentUserCode가 없습니다");
+      return;
+    }
+    console.log("입장 시도:", currentUserCode);
     fetch("/api/game-scores", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ code: currentUserCode, entered: true }),
     })
-      .then(function (r) { return r.json(); })
+      .then(function (r) {
+        console.log("입장 응답 상태:", r.status, r.statusText);
+        if (!r.ok) {
+          return r.json().then(function (errData) {
+            throw new Error(errData.error || "입장 실패: " + r.status);
+          });
+        }
+        return r.json();
+      })
       .then(function (data) {
         console.log("입장 완료:", currentUserCode, data);
+        if (gameWaitingMsg) {
+          gameWaitingMsg.textContent = "입장 완료! 상대방 대기 중…";
+        }
       })
       .catch(function (err) {
         console.error("입장 실패:", err);
+        if (gameWaitingMsg) {
+          gameWaitingMsg.textContent = "입장 실패: " + (err.message || "네트워크 오류");
+          gameWaitingMsg.style.color = "#ff3b30";
+        }
       });
   }
 

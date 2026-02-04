@@ -50,12 +50,17 @@ module.exports = async function handler(req, res) {
 
   const redis = getRedis();
   if (!redis) {
+    console.error("Redis 연결 실패 - 환경 변수 확인 필요");
+    console.error("UPSTASH_REDIS_REST_URL:", process.env.UPSTASH_REDIS_REST_URL ? "설정됨" : "없음");
+    console.error("UPSTASH_REDIS_REST_TOKEN:", process.env.UPSTASH_REDIS_REST_TOKEN ? "설정됨" : "없음");
     res.status(503).json({
       error:
         "점수 저장소가 설정되지 않았어요. Vercel 대시보드에서 Upstash Redis를 연결해 주세요.",
     });
     return;
   }
+  
+  console.log("API 요청:", req.method, req.url);
 
   if (req.method === "GET") {
     try {
