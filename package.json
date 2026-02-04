@@ -8,7 +8,8 @@
   },
   "scripts": {
     "commit": "powershell -ExecutionPolicy Bypass -File ./auto-commit.ps1",
-    "watch": "powershell -ExecutionPolicy Bypass -File ./watch-and-commit.ps1"
+    "watch": "powershell -ExecutionPolicy Bypass -File ./watch-and-commit.ps1",
+    "push": "powershell -ExecutionPolicy Bypass -File ./git-auto-push.ps1"
   },
   "dependencies": {
     "resend": "^4.0.0",
