@@ -6,6 +6,10 @@
   "engines": {
     "node": ">=18.x"
   },
+  "scripts": {
+    "commit": "powershell -ExecutionPolicy Bypass -File ./auto-commit.ps1",
+    "watch": "powershell -ExecutionPolicy Bypass -File ./watch-and-commit.ps1"
+  },
   "dependencies": {
     "resend": "^4.0.0",
     "@upstash/redis": "^1.34.0"
