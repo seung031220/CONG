@@ -152,10 +152,21 @@
       }
       return;
     }
+    
+    // 이미 다른 코드로 입장했는지 확인
+    if (currentUserCode && currentUserCode !== code) {
+      if (gameCodeMessage) {
+        gameCodeMessage.textContent = "이미 " + currentUserCode + " 방에 입장했습니다. 다른 브라우저/기기에서 " + code + " 코드로 입장해 주세요.";
+        gameCodeMessage.className = "form-message error";
+        gameCodeMessage.style.display = "block";
+      }
+      return;
+    }
+    
     currentUserCode = code;
     gameState = "waiting"; // 명시적으로 waiting 상태로 설정
-    console.log("🎮 게임 입장:", code, "gameState:", gameState);
-    if (gameRoomLabel) gameRoomLabel.textContent = "게임 방";
+    console.log("🎮 게임 입장:", code, "gameState:", gameState, "브라우저:", navigator.userAgent.substring(0, 50));
+    if (gameRoomLabel) gameRoomLabel.textContent = "게임 방 (" + code + ")";
     resetGameUI();
     if (gameCodeScreen) gameCodeScreen.classList.remove("game-screen-active");
     if (gameRoomScreen) gameRoomScreen.classList.add("game-screen-active");
