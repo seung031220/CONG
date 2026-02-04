@@ -29,9 +29,17 @@ async function getGameState(redis) {
     redis.get(KEY_REACTION_PREFIX + "1111"),
     redis.get(KEY_REACTION_PREFIX + "0000"),
   ]);
+  
+  // Redis에서 가져온 값 확인 (디버깅용)
+  console.log("Redis 값:", { e1, e2, r1, r2 });
+  
+  // 더 포괄적으로 확인
+  const entered1111 = e1 != null && e1 !== false && e1 !== "false" && e1 !== 0 && e1 !== "0";
+  const entered0000 = e2 != null && e2 !== false && e2 !== "false" && e2 !== 0 && e2 !== "0";
+  
   return {
-    entered_1111: e1 === true || e1 === 1 || e1 === "1" || e1 === "true",
-    entered_0000: e2 === true || e2 === 1 || e2 === "1" || e2 === "true",
+    entered_1111: entered1111,
+    entered_0000: entered0000,
     reaction_1111: r1 != null ? Number(r1) : null,
     reaction_0000: r2 != null ? Number(r2) : null,
   };
@@ -52,9 +60,10 @@ module.exports = async function handler(req, res) {
   if (req.method === "GET") {
     try {
       const state = await getGameState(redis);
+      console.log("GET 요청 - 현재 상태:", state);
       res.status(200).json(state);
     } catch (err) {
-      console.error(err);
+      console.error("GET 요청 실패:", err);
       res.status(500).json({ error: "상태 조회 실패" });
     }
     return;
@@ -82,10 +91,10 @@ module.exports = async function handler(req, res) {
         return;
       }
       
-      // 입장 상태 저장 (명시적으로 "1"로 저장)
+      // 입장 상태 저장 (명시적으로 "1"로 저장, TTL 없음)
       await redis.set(KEY_ENTERED_PREFIX + code, "1");
       const updatedState = await getGameState(redis);
-      console.log("입장 상태 저장 완료:", code, updatedState);
+      console.log("입장 상태 저장 완료:", code, "저장된 상태:", updatedState);
       res.status(200).json({ success: true, state: updatedState });
       return;
     }
