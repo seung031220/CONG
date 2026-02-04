@@ -30,8 +30,8 @@ async function getGameState(redis) {
     redis.get(KEY_REACTION_PREFIX + "0000"),
   ]);
   return {
-    entered_1111: e1 === true || e1 === 1 || e1 === "1",
-    entered_0000: e2 === true || e2 === 1 || e2 === "1",
+    entered_1111: e1 === true || e1 === 1 || e1 === "1" || e1 === "true",
+    entered_0000: e2 === true || e2 === 1 || e2 === "1" || e2 === "true",
     reaction_1111: r1 != null ? Number(r1) : null,
     reaction_0000: r2 != null ? Number(r2) : null,
   };
@@ -82,9 +82,10 @@ module.exports = async function handler(req, res) {
         return;
       }
       
-      // 입장 상태 저장
-      await redis.set(KEY_ENTERED_PREFIX + code, true);
+      // 입장 상태 저장 (명시적으로 "1"로 저장)
+      await redis.set(KEY_ENTERED_PREFIX + code, "1");
       const updatedState = await getGameState(redis);
+      console.log("입장 상태 저장 완료:", code, updatedState);
       res.status(200).json({ success: true, state: updatedState });
       return;
     }

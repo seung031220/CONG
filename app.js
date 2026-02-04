@@ -167,7 +167,14 @@
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ code: currentUserCode, entered: true }),
-    }).catch(function () {});
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        console.log("입장 완료:", currentUserCode, data);
+      })
+      .catch(function (err) {
+        console.error("입장 실패:", err);
+      });
   }
 
   function startCheckingOpponent() {
@@ -183,12 +190,26 @@
       .then(function (data) {
         var entered1111 = data.entered_1111 || false;
         var entered0000 = data.entered_0000 || false;
+        console.log("입장 상태 확인:", { entered1111, entered0000, gameState, data });
         if (entered1111 && entered0000 && gameState === "waiting") {
+          console.log("두 명 모두 입장! 게임 시작");
           clearInterval(checkOpponentInterval);
           startReactionGame();
+        } else {
+          if (gameWaitingMsg) {
+            var waitingText = "다른 참가자 대기 중…";
+            if (currentUserCode === "1111" && entered0000) {
+              waitingText = "0000 방 대기 중…";
+            } else if (currentUserCode === "0000" && entered1111) {
+              waitingText = "1111 방 대기 중…";
+            }
+            gameWaitingMsg.textContent = waitingText;
+          }
         }
       })
-      .catch(function () {});
+      .catch(function (err) {
+        console.error("입장 상태 확인 실패:", err);
+      });
   }
 
   function startReactionGame() {
