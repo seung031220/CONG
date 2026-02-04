@@ -313,12 +313,21 @@
     if (!gameResultArea || !gameResultMsg || !gameResultTimes) return;
     gameResultArea.style.display = "block";
     var otherCode = currentUserCode === "1111" ? "0000" : "1111";
-    var otherTime = times[otherCode];
+    
+    // times 객체에서 직접 가져오기
+    var otherTime = null;
+    if (times && typeof times === "object") {
+      otherTime = times[otherCode] != null ? times[otherCode] : null;
+    }
+    
+    console.log("📊 showResult 호출:", { myTime: myTime, times: times, otherCode: otherCode, otherTime: otherTime });
+    
     if (gameResultTimes) {
       var myTimeText = "내 반응 시간: " + (myTime != null ? myTime.toFixed(3) + "초" : "—");
       var otherTimeText = otherTime != null ? "상대: " + otherTime.toFixed(3) + "초" : "상대: —";
       gameResultTimes.textContent = myTimeText + " / " + otherTimeText;
     }
+    
     if (otherTime == null) {
       gameResultMsg.textContent = "상대방 결과를 기다리는 중…";
       gameResultMsg.className = "game-result-msg";
@@ -326,6 +335,7 @@
       startCheckingResult(myTime);
     } else {
       // 상대방 결과가 있으면 최종 결과 표시
+      console.log("✅ 상대방 결과 있음, 최종 결과 표시");
       displayFinalResult(myTime, otherTime);
       // 확인 중단
       if (checkResultInterval) {
@@ -369,8 +379,10 @@
 
   function startCheckingResult(myTime) {
     if (checkResultInterval) clearInterval(checkResultInterval);
-    console.log("🔄 상대방 결과 확인 시작 (내 시간:", myTime, ")");
+    console.log("🔄 상대방 결과 확인 시작 (내 시간:", myTime, "초, 코드:", currentUserCode + ")");
+    var checkCount = 0;
     checkResultInterval = setInterval(function () {
+      checkCount++;
       fetch("/api/game-scores")
         .then(function (r) {
           if (!r.ok) {
@@ -381,21 +393,21 @@
         })
         .then(function (data) {
           if (!data) return;
-          console.log("📊 결과 확인 응답:", data);
+          console.log("📊 결과 확인 응답 (#" + checkCount + "):", data);
           
           var otherCode = currentUserCode === "1111" ? "0000" : "1111";
           var otherTime = null;
           
           // 현재 사용자 코드에 따라 상대방 시간 가져오기
           if (currentUserCode === "1111") {
-            otherTime = data.reaction_0000 != null ? data.reaction_0000 : null;
+            otherTime = data.reaction_0000 != null ? Number(data.reaction_0000) : null;
           } else if (currentUserCode === "0000") {
-            otherTime = data.reaction_1111 != null ? data.reaction_1111 : null;
+            otherTime = data.reaction_1111 != null ? Number(data.reaction_1111) : null;
           }
           
-          console.log("상대방 시간:", otherTime, "(코드:", otherCode + ")");
+          console.log("상대방 시간:", otherTime, "초 (코드:", otherCode + ", 타입:", typeof otherTime + ")");
           
-          if (otherTime != null) {
+          if (otherTime != null && !isNaN(otherTime)) {
             console.log("✅ 상대방 결과 확인됨:", otherTime, "초");
             // 결과 업데이트
             if (gameResultTimes) {
@@ -409,7 +421,7 @@
             checkResultInterval = null;
             console.log("✅ 최종 결과 표시 완료");
           } else {
-            console.log("⏳ 상대방 결과 대기 중...");
+            console.log("⏳ 상대방 결과 대기 중... (확인 횟수: " + checkCount + ")");
           }
         })
         .catch(function (err) {
@@ -451,10 +463,26 @@
             if (gameResultArea) gameResultArea.style.display = "block";
             return;
           }
-            var times = result.data.times || result.data || {};
-            console.log("결과 수신:", { myTime: gameReactionTime, times: times });
-            showResult(gameReactionTime, times);
-            gameState = "finished";
+          var times = result.data.times || result.data || {};
+          console.log("결과 수신:", { 
+            myTime: gameReactionTime, 
+            times: times,
+            reaction_1111: result.data.reaction_1111,
+            reaction_0000: result.data.reaction_0000,
+            fullData: result.data
+          });
+          
+          // times 객체가 없거나 비어있으면 직접 구성
+          if (!times || Object.keys(times).length === 0) {
+            times = {
+              "1111": result.data.reaction_1111 != null ? Number(result.data.reaction_1111) : null,
+              "0000": result.data.reaction_0000 != null ? Number(result.data.reaction_0000) : null
+            };
+            console.log("times 객체 재구성:", times);
+          }
+          
+          showResult(gameReactionTime, times);
+          gameState = "finished";
         })
         .catch(function () {
           if (gameResultMsg) {
