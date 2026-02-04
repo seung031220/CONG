@@ -29,9 +29,15 @@ if ($status) {
     git commit -m $commitMessage
     
     Write-Host "🚀 푸시 중..." -ForegroundColor Cyan
-    git push origin master:main
-    
-    Write-Host "✅ 완료! 변경사항이 GitHub에 업로드되었습니다." -ForegroundColor Green
+    $pushResult = git push origin master:main 2>&1
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "✅ 완료! 변경사항이 GitHub에 업로드되었습니다." -ForegroundColor Green
+    } else {
+        Write-Host "❌ 푸시 실패:" -ForegroundColor Red
+        Write-Host $pushResult -ForegroundColor Red
+        Write-Host "`n수동으로 푸시하려면 다음 명령어를 실행하세요:" -ForegroundColor Yellow
+        Write-Host "git push origin master:main" -ForegroundColor Yellow
+    }
 } else {
     Write-Host "✨ 변경사항이 없습니다." -ForegroundColor Green
 }
