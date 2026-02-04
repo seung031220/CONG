@@ -1,0 +1,20 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Auto Commit",
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceFolder}/auto-commit.ps1"
+      ],
+      "problemMatcher": [],
+      "runOptions": {
+        "runOn": "folderSave"
+      }
+    }
+  ]
+}

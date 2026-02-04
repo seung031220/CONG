@@ -1,7 +1,8 @@
 # 자동 Git 커밋 및 푸시 스크립트
 # 파일 변경을 감지하고 자동으로 커밋하고 푸시합니다.
 
-$projectPath = Split-Path -Parent $MyInvocation.MyCommand.Path
+# 절대 경로 사용 (한글 경로 문제 해결)
+$projectPath = "c:\Users\seung\OneDrive\바탕 화면\AIRP"
 Set-Location $projectPath
 
 Write-Host "🔄 Git 상태 확인 중..." -ForegroundColor Cyan

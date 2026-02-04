@@ -1,7 +1,8 @@
 # 파일 변경 감지 및 자동 커밋 스크립트
 # 파일이 변경되면 자동으로 커밋하고 푸시합니다.
 
-$projectPath = Split-Path -Parent $MyInvocation.MyCommand.Path
+# 절대 경로 사용 (한글 경로 문제 해결)
+$projectPath = "c:\Users\seung\OneDrive\바탕 화면\AIRP"
 Set-Location $projectPath
 
 Write-Host "👀 파일 변경 감지 시작..." -ForegroundColor Cyan
