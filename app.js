@@ -390,7 +390,7 @@
     if (checkResultInterval) clearInterval(checkResultInterval);
     console.log("🔄 상대방 결과 확인 시작 (내 시간:", myTime, "초, 코드:", currentUserCode + ")");
     var checkCount = 0;
-    var maxChecks = 30; // 최대 30번 확인 (약 1분)
+    var maxChecks = 5; // 최대 5번 확인 (약 10초)
     
     checkResultInterval = setInterval(function () {
       checkCount++;
