@@ -153,12 +153,17 @@
       return;
     }
     currentUserCode = code;
+    gameState = "waiting"; // 명시적으로 waiting 상태로 설정
+    console.log("🎮 게임 입장:", code, "gameState:", gameState);
     if (gameRoomLabel) gameRoomLabel.textContent = "게임 방";
     resetGameUI();
     if (gameCodeScreen) gameCodeScreen.classList.remove("game-screen-active");
     if (gameRoomScreen) gameRoomScreen.classList.add("game-screen-active");
     notifyEntered();
-    startCheckingOpponent();
+    // 약간의 지연 후 확인 시작 (입장 상태가 저장될 시간 제공)
+    setTimeout(function() {
+      startCheckingOpponent();
+    }, 500);
   }
 
   function notifyEntered() {
@@ -215,36 +220,37 @@
         return r.json();
       })
       .then(function (data) {
-        var entered1111 = data.entered_1111 === true || data.entered_1111 === "1" || data.entered_1111 === 1 || data.entered_1111 === "true";
-        var entered0000 = data.entered_0000 === true || data.entered_0000 === "1" || data.entered_0000 === 1 || data.entered_0000 === "true";
+        // 더 명확한 타입 체크
+        var entered1111 = !!(data.entered_1111 === true || data.entered_1111 === "1" || data.entered_1111 === 1 || data.entered_1111 === "true" || (data.entered_1111 != null && data.entered_1111 !== false && data.entered_1111 !== "false" && data.entered_1111 !== 0 && data.entered_1111 !== "0"));
+        var entered0000 = !!(data.entered_0000 === true || data.entered_0000 === "1" || data.entered_0000 === 1 || data.entered_0000 === "true" || (data.entered_0000 != null && data.entered_0000 !== false && data.entered_0000 !== "false" && data.entered_0000 !== 0 && data.entered_0000 !== "0"));
         
-        console.log("입장 상태 확인:", {
+        console.log("🔍 입장 상태 확인:", {
           entered1111: entered1111,
           entered0000: entered0000,
+          raw_entered_1111: data.entered_1111,
+          raw_entered_0000: data.entered_0000,
           rawData: data,
           gameState: gameState,
-          currentUserCode: currentUserCode
+          currentUserCode: currentUserCode,
+          bothEntered: entered1111 && entered0000,
+          canStart: entered1111 && entered0000 && gameState === "waiting"
         });
         
-        if (entered1111 && entered0000 && gameState === "waiting") {
-          console.log("✅ 두 명 모두 입장! 게임 시작");
-          clearInterval(checkOpponentInterval);
-          startReactionGame();
+        if (entered1111 && entered0000) {
+          if (gameState === "waiting") {
+            console.log("✅ 두 명 모두 입장! 게임 시작");
+            clearInterval(checkOpponentInterval);
+            startReactionGame();
+          } else {
+            console.log("⚠️ 두 명 모두 입장했지만 gameState가 'waiting'이 아님:", gameState);
+          }
         } else {
           if (gameWaitingMsg) {
             var waitingText = "다른 참가자 대기 중…";
             if (currentUserCode === "1111") {
-              if (entered0000) {
-                waitingText = "0000 방 입장 완료, 게임 시작 대기 중…";
-              } else {
-                waitingText = "0000 방 대기 중… (현재: " + (entered0000 ? "입장" : "미입장") + ")";
-              }
+              waitingText = entered0000 ? "0000 방 입장 완료, 게임 시작 대기 중…" : "0000 방 대기 중… (1111: " + (entered1111 ? "입장✓" : "미입장") + ", 0000: " + (entered0000 ? "입장✓" : "미입장") + ")";
             } else if (currentUserCode === "0000") {
-              if (entered1111) {
-                waitingText = "1111 방 입장 완료, 게임 시작 대기 중…";
-              } else {
-                waitingText = "1111 방 대기 중… (현재: " + (entered1111 ? "입장" : "미입장") + ")";
-              }
+              waitingText = entered1111 ? "1111 방 입장 완료, 게임 시작 대기 중…" : "1111 방 대기 중… (1111: " + (entered1111 ? "입장✓" : "미입장") + ", 0000: " + (entered0000 ? "입장✓" : "미입장") + ")";
             }
             gameWaitingMsg.textContent = waitingText;
           }
