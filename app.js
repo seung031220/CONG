@@ -337,34 +337,66 @@
 
   function displayFinalResult(myTime, otherTime) {
     if (!gameResultMsg) return;
-    if (myTime != null && myTime < otherTime) {
+    console.log("🏆 최종 결과 계산:", { myTime: myTime, otherTime: otherTime });
+    
+    if (myTime == null) {
+      gameResultMsg.textContent = "결과를 확인할 수 없어요.";
+      gameResultMsg.className = "game-result-msg";
+      return;
+    }
+    
+    if (otherTime == null) {
+      gameResultMsg.textContent = "상대방 결과를 기다리는 중…";
+      gameResultMsg.className = "game-result-msg";
+      return;
+    }
+    
+    // 반응 시간이 짧을수록 승자 (더 빠르게 클릭)
+    if (myTime < otherTime) {
       gameResultMsg.textContent = "승자입니다! 합쳐진 에어팟의 주인이 되었어요.";
       gameResultMsg.className = "game-result-msg winner";
-    } else if (myTime != null && myTime > otherTime) {
+      console.log("✅ 승리!");
+    } else if (myTime > otherTime) {
       gameResultMsg.textContent = "아쉽게도 패배했습니다.";
       gameResultMsg.className = "game-result-msg loser";
-    } else if (myTime != null && myTime === otherTime) {
+      console.log("❌ 패배");
+    } else {
       gameResultMsg.textContent = "무승부입니다.";
       gameResultMsg.className = "game-result-msg";
+      console.log("🤝 무승부");
     }
   }
 
   function startCheckingResult(myTime) {
     if (checkResultInterval) clearInterval(checkResultInterval);
+    console.log("🔄 상대방 결과 확인 시작 (내 시간:", myTime, ")");
     checkResultInterval = setInterval(function () {
       fetch("/api/game-scores")
         .then(function (r) {
-          if (!r.ok) return null;
+          if (!r.ok) {
+            console.error("결과 확인 실패:", r.status);
+            return null;
+          }
           return r.json();
         })
         .then(function (data) {
           if (!data) return;
+          console.log("📊 결과 확인 응답:", data);
+          
           var otherCode = currentUserCode === "1111" ? "0000" : "1111";
-          var otherTime = data.reaction_1111 != null && currentUserCode === "0000" ? data.reaction_1111 : 
-                          data.reaction_0000 != null && currentUserCode === "1111" ? data.reaction_0000 : null;
+          var otherTime = null;
+          
+          // 현재 사용자 코드에 따라 상대방 시간 가져오기
+          if (currentUserCode === "1111") {
+            otherTime = data.reaction_0000 != null ? data.reaction_0000 : null;
+          } else if (currentUserCode === "0000") {
+            otherTime = data.reaction_1111 != null ? data.reaction_1111 : null;
+          }
+          
+          console.log("상대방 시간:", otherTime, "(코드:", otherCode + ")");
           
           if (otherTime != null) {
-            console.log("✅ 상대방 결과 확인됨:", otherTime);
+            console.log("✅ 상대방 결과 확인됨:", otherTime, "초");
             // 결과 업데이트
             if (gameResultTimes) {
               var myTimeText = "내 반응 시간: " + (myTime != null ? myTime.toFixed(3) + "초" : "—");
@@ -375,6 +407,9 @@
             // 확인 중단
             clearInterval(checkResultInterval);
             checkResultInterval = null;
+            console.log("✅ 최종 결과 표시 완료");
+          } else {
+            console.log("⏳ 상대방 결과 대기 중...");
           }
         })
         .catch(function (err) {
