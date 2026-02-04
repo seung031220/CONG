@@ -390,7 +390,7 @@
     if (checkResultInterval) clearInterval(checkResultInterval);
     console.log("🔄 상대방 결과 확인 시작 (내 시간:", myTime, "초, 코드:", currentUserCode + ")");
     var checkCount = 0;
-    var maxChecks = 5; // 최대 5번 확인 (약 10초)
+    var maxChecks = 10; // 최대 10번 확인 (약 10초, 1초 간격)
     
     checkResultInterval = setInterval(function () {
       checkCount++;
@@ -458,7 +458,7 @@
         .catch(function (err) {
           console.error("결과 확인 실패:", err);
         });
-    }, 2000); // 2초마다 확인
+    }, 1000); // 1초마다 확인 (더 빠른 업데이트)
   }
 
   if (gameClickBtn) {
@@ -514,9 +514,45 @@
           showResult(gameReactionTime, times);
           gameState = "finished";
           
-          // 결과를 제출한 후에도 계속 확인 (상대방이 나중에 제출할 수 있음)
-          if (checkResultInterval) clearInterval(checkResultInterval);
-          startCheckingResult(gameReactionTime);
+          // 결과를 제출한 후 즉시 한 번 더 확인 (상대방이 방금 제출했을 수 있음)
+          setTimeout(function() {
+            fetch("/api/game-scores")
+              .then(function (r) {
+                if (!r.ok) return null;
+                return r.json();
+              })
+              .then(function (data) {
+                if (!data) return;
+                var otherCode = currentUserCode === "1111" ? "0000" : "1111";
+                var otherTime = null;
+                if (currentUserCode === "1111") {
+                  otherTime = data.reaction_0000 != null ? Number(data.reaction_0000) : null;
+                } else if (currentUserCode === "0000") {
+                  otherTime = data.reaction_1111 != null ? Number(data.reaction_1111) : null;
+                }
+                
+                if (otherTime != null && !isNaN(otherTime) && otherTime >= 0) {
+                  console.log("✅ 즉시 확인: 상대방 결과 발견!", otherTime);
+                  var times = {
+                    "1111": currentUserCode === "1111" ? gameReactionTime : otherTime,
+                    "0000": currentUserCode === "0000" ? gameReactionTime : otherTime
+                  };
+                  times[currentUserCode] = gameReactionTime;
+                  times[otherCode] = otherTime;
+                  showResult(gameReactionTime, times);
+                } else {
+                  // 즉시 확인에서 없으면 주기적으로 확인 시작
+                  if (checkResultInterval) clearInterval(checkResultInterval);
+                  startCheckingResult(gameReactionTime);
+                }
+              })
+              .catch(function (err) {
+                console.error("즉시 확인 실패:", err);
+                // 실패해도 주기적 확인 시작
+                if (checkResultInterval) clearInterval(checkResultInterval);
+                startCheckingResult(gameReactionTime);
+              });
+          }, 500); // 0.5초 후 즉시 확인
         })
         .catch(function () {
           if (gameResultMsg) {
