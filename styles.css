@@ -1,16 +1,19 @@
-/* 콩한쪽 – Apple style, 화이트 톤 미니멀 */
+/* 콩한쪽 – 검붉은색 다크 테마 (CODE_전체복사용.md 스타일) */
 :root {
-  --bg: #f5f5f7;
-  --surface: #ffffff;
-  --text: #1d1d1f;
-  --text-muted: #6e6e73;
-  --accent: #0071e3;
-  --accent-hover: #0077ed;
-  --border: #d2d2d7;
-  --border-light: #e8e8ed;
-  --shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  --radius: 12px;
-  --radius-lg: 18px;
+  --bg: #1a0f0f;
+  --bg-gradient: radial-gradient(120% 120% at 10% 10%, #2d1515 0%, #1a0f0f 40%, #0d0808 100%);
+  --surface: rgba(255, 255, 255, 0.08);
+  --surface-strong: rgba(255, 255, 255, 0.12);
+  --ink: #f5e6e6;
+  --muted: #a08080;
+  --brand: #c0392b;
+  --brand-strong: #922b21;
+  --border: rgba(160, 80, 80, 0.2);
+  --shadow: 0 30px 80px rgba(80, 20, 20, 0.35);
+  --radius-lg: 32px;
+  --radius-md: 20px;
+  --radius: 16px;
+  --radius-sm: 12px;
   --transition: 0.25s ease;
 }
 
@@ -23,15 +26,33 @@
 body {
   margin: 0;
   min-height: 100vh;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Noto Sans KR", "Segoe UI", sans-serif;
+  font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
   background: var(--bg);
-  color: var(--text);
+  background-image: var(--bg-gradient);
+  color: var(--ink);
   font-size: 17px;
   line-height: 1.47059;
   font-weight: 400;
   letter-spacing: -0.022em;
   -webkit-font-smoothing: antialiased;
+  padding: 16px;
+  position: relative;
+  overflow-x: hidden;
 }
+
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  width: 280px;
+  height: 280px;
+  background: linear-gradient(140deg, rgba(192, 57, 43, 0.25), rgba(146, 43, 33, 0.2));
+  filter: blur(100px);
+  z-index: -2;
+  transform: translate(-50%, -50%);
+}
+body::before { top: 16%; left: 10%; }
+body::after { bottom: -8%; right: -6%; }
 
 .app {
   max-width: 520px;
@@ -54,17 +75,21 @@ body {
   min-width: 0;
   max-width: 520px;
   padding: 2rem 1.5rem 3rem;
-  border-right: 1px solid var(--border-light);
+  border-right: 1px solid var(--border);
 }
 
 .app-right {
   flex: 1 1 360px;
   min-width: 280px;
   padding: 2rem 1.5rem 3rem;
-  background: var(--surface);
+  background: var(--surface-strong);
+  border-radius: var(--radius-lg);
+  margin: 1rem;
   display: flex;
   align-items: flex-start;
   justify-content: center;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
 }
 
 /* 헤더 */
@@ -87,11 +112,15 @@ body {
 }
 
 .logo {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--text);
+  font-size: 1.75rem;
+  font-weight: 900;
+  color: var(--ink);
   margin: 0;
   letter-spacing: -0.025em;
+}
+
+.logo span {
+  color: var(--brand-strong);
 }
 
 .nav-right {
@@ -102,7 +131,7 @@ body {
 
 .nav-link {
   font-size: 15px;
-  color: var(--accent);
+  color: var(--brand);
   text-decoration: none;
   font-weight: 500;
 }
@@ -113,7 +142,7 @@ body {
 
 .nav-user {
   font-size: 14px;
-  color: var(--text-muted);
+  color: var(--muted);
   max-width: 140px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -123,7 +152,7 @@ body {
 .btn-ghost {
   font-family: inherit;
   font-size: 15px;
-  color: var(--accent);
+  color: var(--brand);
   background: none;
   border: none;
   cursor: pointer;
@@ -137,7 +166,7 @@ body {
 .tagline {
   margin: 0;
   font-size: 15px;
-  color: var(--text-muted);
+  color: var(--muted);
   font-weight: 400;
   text-align: left;
 }
@@ -150,15 +179,15 @@ body {
 
 .game-panel-title {
   font-size: 20px;
-  font-weight: 600;
-  color: var(--text);
+  font-weight: 700;
+  color: var(--ink);
   margin: 0 0 0.5rem 0;
   letter-spacing: -0.022em;
 }
 
 .game-panel-desc {
   font-size: 14px;
-  color: var(--text-muted);
+  color: var(--muted);
   margin: 0 0 1.5rem 0;
   line-height: 1.5;
 }
@@ -176,26 +205,33 @@ body {
   font-size: 24px;
   letter-spacing: 0.5em;
   margin-bottom: 1rem;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--border);
+  color: var(--ink);
+}
+
+.game-code-input:focus {
+  border-color: var(--brand);
 }
 
 .game-entered-msg {
   font-size: 17px;
   font-weight: 600;
-  color: var(--accent);
+  color: var(--brand);
   margin: 0 0 0.5rem 0;
 }
 
 .game-room-label {
   font-size: 15px;
-  font-weight: 600;
-  color: var(--accent);
+  font-weight: 700;
+  color: var(--brand);
   margin: 0 0 0.5rem 0;
 }
 
 .game-entered-hint,
 #game-instruction {
   font-size: 14px;
-  color: var(--text-muted);
+  color: var(--muted);
   margin: 0 0 1rem 0;
   line-height: 1.5;
 }
@@ -206,7 +242,7 @@ body {
 
 .game-waiting-msg {
   font-size: 15px;
-  color: var(--text-muted);
+  color: var(--muted);
   margin: 0;
   text-align: center;
   padding: 2rem 0;
@@ -214,8 +250,8 @@ body {
 
 .game-countdown-display {
   font-size: 32px;
-  font-weight: 600;
-  color: var(--accent);
+  font-weight: 700;
+  color: var(--brand);
   margin: 0 0 1rem 0;
   text-align: center;
   min-height: 40px;
@@ -223,15 +259,15 @@ body {
 
 .game-instruction-text {
   font-size: 14px;
-  color: var(--text-muted);
+  color: var(--muted);
   margin: 0 0 1.5rem 0;
   text-align: center;
 }
 
 .game-reaction-time {
   font-size: 18px;
-  font-weight: 600;
-  color: var(--accent);
+  font-weight: 700;
+  color: var(--brand);
   margin: 1rem 0 0 0;
   text-align: center;
 }
@@ -240,34 +276,47 @@ body {
   width: 100%;
   min-height: 80px;
   font-size: 18px;
+  background: linear-gradient(130deg, var(--brand-strong), var(--brand));
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  font-weight: 700;
+  box-shadow: 0 16px 35px rgba(192, 57, 43, 0.35);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.game-click-btn:hover {
+  transform: translateY(-2px);
 }
 
 .game-click-btn:disabled {
   opacity: 0.7;
+  transform: none;
 }
 
 .game-result-area {
   padding-top: 1rem;
-  border-top: 1px solid var(--border-light);
+  border-top: 1px solid var(--border);
 }
 
 .game-result-msg {
   font-size: 18px;
-  font-weight: 600;
+  font-weight: 700;
   margin: 0 0 0.5rem 0;
+  color: var(--ink);
 }
 
 .game-result-msg.winner {
-  color: var(--accent);
+  color: var(--brand);
 }
 
 .game-result-msg.loser {
-  color: var(--text-muted);
+  color: var(--muted);
 }
 
 .game-result-times {
   font-size: 14px;
-  color: var(--text-muted);
+  color: var(--muted);
   margin: 0;
   line-height: 1.6;
 }
@@ -279,10 +328,11 @@ body {
   .app-left {
     max-width: none;
     border-right: none;
-    border-bottom: 1px solid var(--border-light);
+    border-bottom: 1px solid var(--border);
   }
   .app-right {
     min-height: 320px;
+    margin: 1rem 0;
   }
 }
 
@@ -303,15 +353,15 @@ body {
 
 .step-title {
   font-size: 22px;
-  font-weight: 600;
+  font-weight: 700;
   margin: 0 0 0.5rem 0;
-  color: var(--text);
+  color: var(--ink);
   letter-spacing: -0.022em;
 }
 
 .step-desc {
   font-size: 15px;
-  color: var(--text-muted);
+  color: var(--muted);
   margin: 0 0 1.5rem 0;
   font-weight: 400;
 }
@@ -324,7 +374,7 @@ body {
   padding: 0.5rem 0;
   font-family: inherit;
   font-size: 15px;
-  color: var(--accent);
+  color: var(--brand);
   background: none;
   border: none;
   cursor: pointer;
@@ -352,22 +402,23 @@ body {
   font-size: 17px;
   text-align: left;
   background: var(--surface);
-  border: 1px solid var(--border-light);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   cursor: pointer;
-  transition: background var(--transition), border-color var(--transition);
+  transition: background var(--transition), border-color var(--transition), transform 0.2s ease;
   box-shadow: var(--shadow);
-  color: var(--text);
+  color: var(--ink);
   font-weight: 400;
 }
 
 .option-card:hover {
-  background: #fafafa;
-  border-color: var(--border);
+  background: var(--surface-strong);
+  border-color: var(--brand);
+  transform: translateY(-2px);
 }
 
 .option-card:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--brand);
   outline-offset: 2px;
 }
 
@@ -378,14 +429,14 @@ body {
 }
 
 .option-label {
-  font-weight: 500;
-  color: var(--text);
+  font-weight: 600;
+  color: var(--ink);
 }
 
 .option-desc {
   margin-left: auto;
   font-size: 15px;
-  color: var(--text-muted);
+  color: var(--muted);
   font-weight: 400;
 }
 
@@ -398,8 +449,8 @@ body {
 
 .model-group-title {
   font-size: 13px;
-  font-weight: 600;
-  color: var(--text-muted);
+  font-weight: 700;
+  color: var(--muted);
   margin: 0 0 0.625rem 0;
   letter-spacing: 0.02em;
   text-transform: uppercase;
@@ -456,7 +507,7 @@ body {
 /* 내 부품 등록하기 폼 */
 .form-register {
   background: var(--surface);
-  border: 1px solid var(--border-light);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 1.5rem;
   margin-bottom: 1rem;
@@ -470,8 +521,8 @@ body {
 .form-label {
   display: block;
   font-size: 15px;
-  font-weight: 500;
-  color: var(--text);
+  font-weight: 600;
+  color: var(--ink);
   margin-bottom: 0.5rem;
 }
 
@@ -480,12 +531,12 @@ body {
   padding: 0.75rem 1rem;
   font-family: inherit;
   font-size: 17px;
-  color: var(--text);
+  color: var(--ink);
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%236e6e73' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23a08080' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 1rem center;
   padding-right: 2.5rem;
@@ -493,7 +544,7 @@ body {
 
 .form-select:focus {
   outline: none;
-  border-color: var(--accent);
+  border-color: var(--brand);
 }
 
 .form-input {
@@ -501,25 +552,25 @@ body {
   padding: 0.75rem 1rem;
   font-family: inherit;
   font-size: 17px;
-  color: var(--text);
-  background: var(--surface);
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.08);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
 }
 
 .form-input:focus {
   outline: none;
-  border-color: var(--accent);
+  border-color: var(--brand);
 }
 
 .form-input::placeholder {
-  color: var(--text-muted);
+  color: var(--muted);
 }
 
 /* 배송 안내 */
 .shipping-notice {
   background: var(--surface);
-  border: 1px solid var(--border-light);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 1.25rem 1.5rem;
   margin-bottom: 1.25rem;
@@ -528,20 +579,20 @@ body {
 
 .shipping-address {
   font-size: 15px;
-  color: var(--text);
+  color: var(--ink);
   margin: 0 0 0.5rem 0;
   line-height: 1.5;
 }
 
 .shipping-desc {
   font-size: 14px;
-  color: var(--text-muted);
+  color: var(--muted);
   margin: 0;
 }
 
 .form-summary {
   font-size: 14px;
-  color: var(--text-muted);
+  color: var(--muted);
   margin: 0 0 1rem 0;
   padding: 0.5rem 0;
 }
@@ -553,17 +604,17 @@ body {
   padding: 0.75rem;
   border: 1px dashed var(--border);
   border-radius: var(--radius-sm);
-  background: var(--bg);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .form-file {
   font-size: 14px;
-  color: var(--text-muted);
+  color: var(--muted);
 }
 
 .form-file-name {
   font-size: 14px;
-  color: var(--text-muted);
+  color: var(--muted);
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -573,7 +624,7 @@ body {
 .form-hint {
   margin: 0.5rem 0 0 0;
   font-size: 13px;
-  color: var(--text-muted);
+  color: var(--muted);
 }
 
 .btn-primary {
@@ -582,22 +633,24 @@ body {
   padding: 1rem 1.5rem;
   font-family: inherit;
   font-size: 17px;
-  font-weight: 500;
+  font-weight: 700;
   color: #fff;
-  background: var(--accent);
+  background: linear-gradient(130deg, var(--brand-strong), var(--brand));
   border: none;
   border-radius: var(--radius);
   cursor: pointer;
-  transition: opacity var(--transition);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 16px 35px rgba(192, 57, 43, 0.35);
 }
 
 .btn-primary:hover {
-  opacity: 0.9;
+  transform: translateY(-2px);
 }
 
 .btn-primary:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+  transform: none;
 }
 
 .form-message {
@@ -605,22 +658,25 @@ body {
   padding: 1rem;
   border-radius: var(--radius-sm);
   margin-top: 1rem;
+  color: var(--ink);
 }
 
 .form-message.success {
-  background: rgba(0, 113, 227, 0.1);
-  color: var(--accent);
+  background: rgba(192, 57, 43, 0.2);
+  color: var(--brand);
+  border: 1px solid var(--brand);
 }
 
 .form-message.error {
-  background: rgba(255, 59, 48, 0.1);
-  color: #c00;
+  background: rgba(192, 57, 43, 0.15);
+  color: var(--brand);
+  border: 1px solid var(--brand);
 }
 
 /* 게임 대기실 */
 .lobby-card {
   background: var(--surface);
-  border: 1px solid var(--border-light);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 1.5rem;
   margin-bottom: 1.5rem;
@@ -629,14 +685,14 @@ body {
 
 .lobby-model {
   font-size: 17px;
-  font-weight: 600;
-  color: var(--text);
+  font-weight: 700;
+  color: var(--ink);
   margin: 0 0 0.75rem 0;
 }
 
 .lobby-status {
   font-size: 15px;
-  color: var(--text-muted);
+  color: var(--muted);
   margin: 0 0 1rem 0;
 }
 
@@ -651,16 +707,16 @@ body {
 
 .lobby-slot {
   font-size: 15px;
-  color: var(--text);
+  color: var(--ink);
   padding: 0.5rem 0.75rem;
-  background: var(--bg);
+  background: rgba(255, 255, 255, 0.05);
   border-radius: var(--radius-sm);
-  border: 1px solid var(--border-light);
+  border: 1px solid var(--border);
 }
 
 .lobby-hint {
   font-size: 13px;
-  color: var(--text-muted);
+  color: var(--muted);
   margin: 1rem 0 0 0;
 }
 
@@ -695,4 +751,9 @@ body {
   margin: 0;
   font-size: 15px;
   font-weight: 500;
+}
+
+@media (min-width: 480px) {
+  body { padding: 24px; }
+  .app { max-width: 520px; }
 }
