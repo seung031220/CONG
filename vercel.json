@@ -2,7 +2,6 @@
   "version": 2,
   "buildCommand": null,
   "outputDirectory": ".",
-  "rootDirectory": "AIRP",
   "framework": null,
   "functions": {
     "api/*.js": {
