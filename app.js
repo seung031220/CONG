@@ -39,6 +39,7 @@
   var gameButtonShowTime = null;
   var gameReactionTime = null;
   var checkOpponentInterval = null;
+  var checkResultInterval = null;
 
   const partCards = document.querySelectorAll(".options-part .option-card");
   const modelCards = document.querySelectorAll(".options-model .option-card");
@@ -321,7 +322,22 @@
     if (otherTime == null) {
       gameResultMsg.textContent = "상대방 결과를 기다리는 중…";
       gameResultMsg.className = "game-result-msg";
-    } else if (myTime != null && myTime < otherTime) {
+      // 상대방 결과가 없으면 주기적으로 확인
+      startCheckingResult(myTime);
+    } else {
+      // 상대방 결과가 있으면 최종 결과 표시
+      displayFinalResult(myTime, otherTime);
+      // 확인 중단
+      if (checkResultInterval) {
+        clearInterval(checkResultInterval);
+        checkResultInterval = null;
+      }
+    }
+  }
+
+  function displayFinalResult(myTime, otherTime) {
+    if (!gameResultMsg) return;
+    if (myTime != null && myTime < otherTime) {
       gameResultMsg.textContent = "승자입니다! 합쳐진 에어팟의 주인이 되었어요.";
       gameResultMsg.className = "game-result-msg winner";
     } else if (myTime != null && myTime > otherTime) {
@@ -331,6 +347,40 @@
       gameResultMsg.textContent = "무승부입니다.";
       gameResultMsg.className = "game-result-msg";
     }
+  }
+
+  function startCheckingResult(myTime) {
+    if (checkResultInterval) clearInterval(checkResultInterval);
+    checkResultInterval = setInterval(function () {
+      fetch("/api/game-scores")
+        .then(function (r) {
+          if (!r.ok) return null;
+          return r.json();
+        })
+        .then(function (data) {
+          if (!data) return;
+          var otherCode = currentUserCode === "1111" ? "0000" : "1111";
+          var otherTime = data.reaction_1111 != null && currentUserCode === "0000" ? data.reaction_1111 : 
+                          data.reaction_0000 != null && currentUserCode === "1111" ? data.reaction_0000 : null;
+          
+          if (otherTime != null) {
+            console.log("✅ 상대방 결과 확인됨:", otherTime);
+            // 결과 업데이트
+            if (gameResultTimes) {
+              var myTimeText = "내 반응 시간: " + (myTime != null ? myTime.toFixed(3) + "초" : "—");
+              var otherTimeText = "상대: " + otherTime.toFixed(3) + "초";
+              gameResultTimes.textContent = myTimeText + " / " + otherTimeText;
+            }
+            displayFinalResult(myTime, otherTime);
+            // 확인 중단
+            clearInterval(checkResultInterval);
+            checkResultInterval = null;
+          }
+        })
+        .catch(function (err) {
+          console.error("결과 확인 실패:", err);
+        });
+    }, 2000); // 2초마다 확인
   }
 
   if (gameClickBtn) {
@@ -366,9 +416,10 @@
             if (gameResultArea) gameResultArea.style.display = "block";
             return;
           }
-          var times = result.data.times || result.data || {};
-          showResult(gameReactionTime, times);
-          gameState = "finished";
+            var times = result.data.times || result.data || {};
+            console.log("결과 수신:", { myTime: gameReactionTime, times: times });
+            showResult(gameReactionTime, times);
+            gameState = "finished";
         })
         .catch(function () {
           if (gameResultMsg) {
